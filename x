@@ -118,7 +118,12 @@ function x() {
       fi
       ;;
     *)
-      echo "Can't \"$1\". Try one of: $cmds"
+      usage="Can't \"$1\". Try one of:"
+      for cmd in $cmds
+      do
+        usage="$usage\n  $cmd"
+      done
+      printf "$usage\n"
       ;;
   esac
 }
