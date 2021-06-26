@@ -1,0 +1,35 @@
+[package]
+name = "lastresort"
+version = "0.1.0"
+edition = "2018"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+sqlx = { version = "0.5", features = [ "runtime-tokio-rustls", "postgres", "chrono", "json" ] }
+actix-web = "4.0.0-beta.6"
+anyhow = "1.0"
+uuid = { version = "0.8", features = ["serde", "v4"] }
+dotenv = "0.15"
+serde = "1.0"
+serde_json = "1.0"
+futures = "0.3"
+chrono = { version = "0.4", features = [ "serde" ] }
+tokio = { version = "1.6", features = ["full"] }
+reqwest = { version = "0.11", features = ["json"] }
+env_logger = "0.8.2"
+log = "0.4.11"
+sha3 = "0.9"
+hex-literal = "0.3"
+hex = "0.3"
+openssl-sys = "*"
+
+[features]
+# Force openssl-sys to staticly link in the openssl library. Necessary when
+# cross compiling to x86_64-unknown-linux-musl.
+# See https://github.com/sfackler/rust-openssl/issues/980
+vendored = ["openssl-sys/vendored"]
+
+[[bin]]
+name = "lastresort-server"
+path = "src/lastresort-server.rs"

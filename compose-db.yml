@@ -1,0 +1,19 @@
+version: "3"
+
+services:
+  lastresort_db:
+    image: "postgres:13"
+    container_name: "lastresort_db"
+    expose:
+      - 5432
+    environment:
+      POSTGRES_USER: ${LASTRESORT_PGUSER}
+      POSTGRES_PASSWORD: ${LASTRESORT_PGPASS}
+      POSTGRES_DB: ${LASTRESORT_DB}
+    ports:
+      - 127.0.0.1:5432:5432
+    volumes:
+      - lastresort_dbdata:/var/lib/postgresql/data_lastresort
+
+volumes:
+  lastresort_dbdata:
