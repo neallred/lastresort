@@ -6,6 +6,7 @@ use chrono::{DateTime, Utc};
 use uuid::Uuid;
 use hex;
 use sha3::{Digest, Sha3_512};
+use log::{info};
 
 #[derive(Serialize, Deserialize, Debug)]
 #[serde(rename_all = "camelCase")]
@@ -50,6 +51,27 @@ pub fn hash_pw(passwd: &str) -> String {
     let result = hasher.finalize();
     hex::encode(result)
 }
+
+pub async fn bootstrap_owner(pool: &PgPool) -> Result<Option<String>> {
+    info!("checking if need to bootstrap owner");
+    let has_owner = sqlx::query!(
+        r#"
+        SELECT COUNT(users.id) FROM users LEFT JOIN user_roles ON users.id = user_roles.user_id LEFT JOIN roles ON user_roles.role_id = roles.id WHERE roles.name = 'owner' LIMIT 1;
+        "#
+        )
+        .fetch_optional(pool)
+        .await?;
+
+    if has_owner.is_none() {
+        let claim_owner_password = format!("{}", Uuid::new_v4());
+        println!("needs an owner, claim ownership by making user with password or by changing password on existing user to {}", &claim_owner_password);
+        return Ok(Some(claim_owner_password));
+    } else {
+        println!("has owner, nothing to do");
+        return Ok(None)
+    }
+}
+
 
 impl User {
     pub async fn exists(pool: &PgPool, username: &String) -> Result<bool> {
@@ -154,6 +176,31 @@ impl User {
             .await?;
 
         Ok(())
+    }
+
+    pub async fn is_admin(pool: &PgPool, token: String) -> Result<bool> {
+        if let Ok(result) = sqlx::query!("SELECT user_id FROM tokens WHERE token = $1", token).fetch_one(pool).await
+        {
+            if let Ok(result) = sqlx::query!("SELECT role_id, group_id FROM user_roles WHERE user_id = $1", result.user_id).fetch_one(pool).await {
+                if let Ok(result) = sqlx::query!("SELECT name FROM roles WHERE id = $1", result.role_id).fetch_one(pool).await {
+                    if result.name == "admin" || result.name == "owner" {
+                        return Ok(true)
+                    }
+                }
+            }
+        }
+        return Ok(false)
+    }
+
+    pub async fn delete(pool: &PgPool, token: String, id_to_delete: i64) -> Result<()> {
+        if let Ok(true) = User::is_admin(pool, token).await {
+            let _ = sqlx::query!("DELETE FROM users WHERE id = $1", id_to_delete)
+                .execute(pool)
+                .await?;
+
+            return Ok(());
+        }
+        Err(anyhow!("Unable to delete user, could not validate that this token belongs to an admin"))
     }
 
     // pub async fn is_logged_in(pool: &PgPool, id: i64, token: String) -> Result<bool> {

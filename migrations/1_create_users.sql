@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS users
 CREATE TABLE IF NOT EXISTS roles
 (
     id      BIGSERIAL PRIMARY KEY,
-    name    TEXT,
+    name    TEXT NOT NULL,
     UNIQUE(name)
 );
 

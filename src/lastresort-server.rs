@@ -29,6 +29,8 @@ async fn main() -> Result<()> {
         .max_connections(5)
         .connect(&database_url).await?;
 
+    let _ = user::bootstrap_owner(&db_pool).await;
+
     HttpServer::new(move || {
         App::new()
             .wrap(middleware::Logger::default())
