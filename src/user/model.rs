@@ -99,7 +99,7 @@ impl User {
             username
         )
             .fetch_one(pool)
-            .await 
+            .await
         {
             return (result.id, hash_pw(pw) == result.password)
         };
