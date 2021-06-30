@@ -6,8 +6,9 @@ const CreateUser = () => {
     const [password, setPassword] = useState("");
 
     const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+        const apiRoot = 'http://localhost:8080'
         e.preventDefault();
-        axios.post('localhost:8080/api/users', {
+        axios.post(`${apiRoot}/api/users`, {
             username,
             password,
         })

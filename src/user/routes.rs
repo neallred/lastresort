@@ -9,7 +9,7 @@ async fn create(user: web::Json<CreateRequest>, db_pool: web::Data<PgPool>) -> i
     let result = User::create(db_pool.get_ref(), user.into_inner()).await;
     match result {
         Ok(x) => HttpResponse::Ok().json(x),
-        _ => res::r500("Error trying to create new user")
+        Err(x) => HttpResponse::InternalServerError().body(format!("Error trying to create user: {:?}", x)),
     }
 }
 
