@@ -1,5 +1,4 @@
 #! /usr/bin/env bash
-# x is for execute
 
 function deps() {
   echo ""
@@ -82,11 +81,20 @@ function x() {
     dbcreate)
       sqlx database create
       ;;
+    dbkill)
+      docker kill `docker ps -aqf "name=lastresort_db"`
+      ;;
     dbmigrate)
       sqlx migrate run
       ;;
     dbreset)
       sqlx database reset
+      ;;
+    dbrestart)
+      docker restart `docker ps -aqf "name=lastresort_db"`
+      ;;
+    dbrm)
+      docker rm `docker ps -aqf "name=lastresort_db"`
       ;;
     dbup)
       docker-compose -f compose-db.yml up
